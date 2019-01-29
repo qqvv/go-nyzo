@@ -100,7 +100,7 @@ func (sig Signature) MarshalJSON() ([]byte, error) {
 	return b, err
 }
 
-func (pubKey PublicKey) UnmarshalJSON(data []byte) error {
+func (pubKey *PublicKey) UnmarshalJSON(data []byte) error {
 	var x string
 	err := json.Unmarshal(data, x)
 	if err != nil {
@@ -114,7 +114,7 @@ func (pubKey PublicKey) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (privKey PrivateKey) UnmarshalJSON(data []byte) error {
+func (privKey *PrivateKey) UnmarshalJSON(data []byte) error {
 	var x string
 	err := json.Unmarshal(data, x)
 	if err != nil {
@@ -128,7 +128,7 @@ func (privKey PrivateKey) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (sig Signature) UnmarshalJSON(data []byte) error {
+func (sig *Signature) UnmarshalJSON(data []byte) error {
 	var x string
 	err := json.Unmarshal(data, x)
 	if err != nil {
