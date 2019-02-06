@@ -10,15 +10,15 @@ import (
 )
 
 type Tx struct {
-	Type           byte // 0=coingeneration, 1=seed, 2=standard
-	Timestamp      int64
-	Amount         int64
-	RecipientID    crypto.PublicKey
-	PrevHashHeight int64
-	PrevHash       crypto.Hash
-	SenderID       crypto.PublicKey
-	SenderData     []byte
-	SenderSig      crypto.Signature
+	Type           byte             `json:"type"` // 0=coingeneration, 1=seed, 2=standard
+	Timestamp      int64            `json:"timestamp"`
+	Amount         int64            `json:"amount"`
+	RecipientID    crypto.PublicKey `json:"recipientId"`
+	PrevHashHeight int64            `json:"prevHashHeight"`
+	PrevHash       crypto.Hash      `json:"prevHash"`
+	SenderID       crypto.PublicKey `json:"senderId"`
+	SenderData     []byte           `json:"senderData"`
+	SenderSig      crypto.Signature `json:"senderSig"`
 }
 
 func (tx *Tx) Validate() (bool, error) {
@@ -31,7 +31,7 @@ func (tx *Tx) Validate() (bool, error) {
 	// (5) the sender and receiver are different
 	// (6) the block for the specified timestamp is still open for processing
 
-	var valid bool
+	var valid = true
 	var err error
 
 	if tx.Type != 1 && tx.Type != 2 {
@@ -85,9 +85,9 @@ func (tx *Tx) Serialize() []byte {
 
 func (tx *Tx) ForSigning() []byte {
 	buf := new(bytes.Buffer)
-	// type (1) + timestamp (8) + amount (8) + recipient pubk (32) + prevhashheight (8)
+	// type (1) + timestamp (8) + amount (8) + recipient pubk (32)
 	// + prevhash (32) + sender pubk (32) + hash of senderdata (32)
-	buf.Grow(153)
+	buf.Grow(145)
 
 	binary.Write(buf, binary.BigEndian, tx.Type)
 	binary.Write(buf, binary.BigEndian, tx.Timestamp/1000/1000) // to milli
@@ -150,9 +150,9 @@ func (tx *Tx) Deserialize(i interface{}) error {
 
 func (tx *Tx) SerializedLen() int {
 	// type (1) + timestamp (8) + amount (8) + recipient pubk (32)
-	// + prevhashheight (8) + prevhash (32) + sender pubk (32)
-	// + sender sig (64) + senderdata len (1) + senderdata (0-32)
-	return 186 + len(tx.SenderData)
+	// + prevhashheight (8) + sender pubk (32) + sender sig (64)
+	// + senderdata len (1) + senderdata (0-32)
+	return 154 + len(tx.SenderData)
 }
 
 func (tx *Tx) Sign(privKey crypto.PrivateKey) {
