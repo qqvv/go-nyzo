@@ -34,7 +34,7 @@ func (msg *Msg) ForSigning() []byte {
 	buf := new(bytes.Buffer)
 	buf.Grow(msg.SerializedLen() - 4) // without length
 
-	binary.Write(buf, binary.BigEndian, msg.Timestamp)
+	binary.Write(buf, binary.BigEndian, msg.Timestamp/1000/1000) // to milli
 	binary.Write(buf, binary.BigEndian, msg.Type)
 	binary.Write(buf, binary.BigEndian, msg.Content)
 	binary.Write(buf, binary.BigEndian, msg.ID)
@@ -55,6 +55,7 @@ func (msg *Msg) Deserialize(i interface{}) error {
 	}
 
 	binary.Read(buf, binary.BigEndian, &msg.Timestamp)
+	msg.Timestamp *= 1000 * 1000 // to nano
 	binary.Read(buf, binary.BigEndian, &msg.Type)
 	binary.Read(buf, binary.BigEndian, &msg.Content)
 	binary.Read(buf, binary.BigEndian, &msg.ID)
