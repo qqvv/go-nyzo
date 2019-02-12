@@ -9,21 +9,36 @@ import (
 )
 
 type List struct {
-	Height        int64
-	RolloverFees  byte
-	PrevVerifiers []crypto.PublicKey
-	Items         []*Item
+	Height        int64              `json:"height"`
+	RolloverFees  byte               `json:"rolloverFees"`
+	PrevVerifiers []crypto.PublicKey `json:"prevVerifiers"`
+	Items         []*Item            `json:"items"`
 }
 
 type Item struct {
-	ID             crypto.PublicKey
-	Balance        int64
-	BlocksUntilFee int16
+	ID             crypto.PublicKey `json:"id"`
+	Balance        int64            `json:"balance"`
+	BlocksUntilFee int16            `json:"blocksUntilFee"`
 }
 
 func (list *List) Serialize() []byte {
 	buf := new(bytes.Buffer)
-	// TODO
+	buf.Grow(list.SerializedLen())
+
+	binary.Write(buf, binary.BigEndian, list.Height)
+	binary.Write(buf, binary.BigEndian, list.RolloverFees)
+
+	for _, id := range list.PrevVerifiers {
+		binary.Write(buf, binary.BigEndian, id)
+	}
+
+	binary.Write(buf, binary.BigEndian, int32(len(list.Items)))
+	for _, item := range list.Items {
+		binary.Write(buf, binary.BigEndian, item.ID)
+		binary.Write(buf, binary.BigEndian, item.Balance)
+		binary.Write(buf, binary.BigEndian, item.BlocksUntilFee)
+	}
+
 	return buf.Bytes()
 }
 
@@ -63,6 +78,13 @@ func (list *List) Deserialize(i interface{}) error {
 	}
 
 	return nil
+}
+
+func (list *List) SerializedLen() int {
+	size := 13                           // height (8) + rolloverfees (1) + length (4)
+	size += len(list.PrevVerifiers) * 32 // pubk (32)
+	size += len(list.Items) * 42         // pubk (32) + balance (8) + blocksuntilfee (2)
+	return size
 }
 
 func NewList() *List {
